@@ -4,8 +4,8 @@ class MenuTemplate {
     MenuTemplate();
     ~MenuTemplate();
     virtual void run();
-    virtual void printMenu(){};
-    virtual void menuSelect(int c){};
+    virtual void printMenu() {};
+    virtual void menuSelect(int c) {};
     virtual int readSerialChar();
     void returnToParentMenu();
     void deleteSubMenu();
@@ -23,12 +23,12 @@ class MenuTemplate {
 class AskStringMenu: public MenuTemplate {
   public:
     AskStringMenu(MenuTemplate *parent);
-    ~AskStringMenu(){}
+    ~AskStringMenu() {}
     void printMenu();
 
     AskStringMenu * menuText(const char*str);
 
-    virtual void ready(char *str){};
+    virtual void ready(char *str) {};
     void run();
   private:
     const char *text;

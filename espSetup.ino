@@ -13,7 +13,7 @@
     - For Mac OSX and iOS support is built in through Bonjour already.
   - Point your browser to http://esp8266.local, you should see a response.
 
- */
+*/
 
 
 #include <ESP8266WiFi.h>

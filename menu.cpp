@@ -15,7 +15,7 @@ MenuTemplate::MenuTemplate(MenuTemplate *parent) {
 
 MenuTemplate::MenuTemplate() {
   this->parentPtr = NULL;
-  subMenuPtr=NULL;
+  subMenuPtr = NULL;
   returnToParentMenuAsked = false;
   lastChar = -1;
   filterTimer = millis();
@@ -25,11 +25,11 @@ MenuTemplate::MenuTemplate() {
 
 
 MenuTemplate::~MenuTemplate() {
-   deleteSubMenu();
+  deleteSubMenu();
 }
 
 void MenuTemplate::printMenuFiltered() {
-  if(abs(millis()-filterTimer)<1000) return;
+  if (abs(millis() - filterTimer) < 1000) return;
   filterTimer = millis();
   printMenu();
 }
@@ -39,22 +39,22 @@ int MenuTemplate::readSerialChar() {
 }
 
 void MenuTemplate::run() {
-  if(returnToParentMenuAsked) {
+  if (returnToParentMenuAsked) {
     returnToParentMenuAsked = false;
     filterTimer = millis();
     deleteSubMenu();
     printMenu();
   }
 
-  if(subMenuPtr) {
+  if (subMenuPtr) {
     subMenuPtr->run();
     return;
   }
   int c = readSerialChar();
-  if(c=='\n') {
+  if (c == '\n') {
     printMenuFiltered();
   } else {
-    if(c!='\r' && c!=-1) {
+    if (c != '\r' && c != -1) {
       menuSelect(c);
     }
   }
@@ -62,12 +62,12 @@ void MenuTemplate::run() {
 
 
 void MenuTemplate::returnToParentMenu() {
-  if(parentPtr) {
+  if (parentPtr) {
     parentPtr->returnToParentMenuAsked = true;
   }
 }
 void MenuTemplate::deleteSubMenu() {
-  if(subMenuPtr) {
+  if (subMenuPtr) {
     delete subMenuPtr;
     subMenuPtr = NULL;
   }
@@ -80,7 +80,7 @@ void MenuTemplate::subMenu(MenuTemplate *subMenuPtr) {
 /*********************************************************************************/
 
 
-AskStringMenu::AskStringMenu(MenuTemplate *parent): MenuTemplate(parent){
+AskStringMenu::AskStringMenu(MenuTemplate *parent): MenuTemplate(parent) {
   i = 0;
 
 }
@@ -89,30 +89,30 @@ void AskStringMenu::printMenu() {
 }
 
 AskStringMenu * AskStringMenu::menuText(const char*str) {
-  text=str;
+  text = str;
   return this;
 }
 
 
 void AskStringMenu::run() {
   int c = Serial.read();
-  if(c!=-1) {
-    if(c==8) {
+  if (c != -1) {
+    if (c == 8) {
       i--;
-      if(i<=0) {
-        i=0;
+      if (i <= 0) {
+        i = 0;
         return;
       }
-    } if(c=='\n' || c=='\r') {
-      if(abs(millis()-filterTimer)<1000) return;
+    } if (c == '\n' || c == '\r') {
+      if (abs(millis() - filterTimer) < 1000) return;
       buffer[i] = 0;
       ready(buffer);
       returnToParentMenu();
     } else {
       buffer[i] = c;
       i++;
-      if(i>=sizeof(buffer)-1) {
-        i-=1;
+      if (i >= sizeof(buffer) - 1) {
+        i -= 1;
         return;
       }
     }

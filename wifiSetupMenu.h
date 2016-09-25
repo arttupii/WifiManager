@@ -3,6 +3,6 @@
 
 
 void runWifiSetupMenu();
-void initWifiSetupMenu(int eppRomAddress=0);
+void initWifiSetupMenu(int eppRomAddress = 0);
 
 #endif
