@@ -3,7 +3,9 @@
 #include <WiFiClient.h>
 #include "menu.h"
 #include <EEPROM.h>
+#include <stdio.h>
 
+int eppAddr;
 void updateEPPROM();
 
 struct networkSetup {
@@ -73,18 +75,12 @@ class SetIpMenu: public AskStringMenu {
     SetIpMenu(MenuTemplate *parent, char *to): AskStringMenu(parent) {
       this->to = to;
     }
-    void ready(char *str) {
-      char* command = strtok(str, ".");
-      int i = 3;
-      while (command != 0)
-      {
-        Serial.println(command);
-        if (i >= 0) {
-          to[i] = atoi(command);
-          i--;
-        }
-        command = strtok(0, ".");
-      }
+    void ready(String &str) {
+      Split s(str,'.');
+      to[3]=atoi(s.next().c_str());
+      to[2]=atoi(s.next().c_str());
+      to[1]=atoi(s.next().c_str());
+      to[0]=atoi(s.next().c_str());
     }
     SetIpMenu *toBuffer(char *ptr) {
       to = ptr;
@@ -96,11 +92,12 @@ class SetIpMenu: public AskStringMenu {
 
 class AskStrMenu: public AskStringMenu {
   public:
-    AskStrMenu(MenuTemplate *parent, char *to): AskStringMenu(parent) {
+    AskStrMenu(MenuTemplate *parent, char *to, int bufferSize=0): AskStringMenu(parent) {
       this->to = to;
+	  this->size = bufferSize;
     }
-    void ready(char *str) {
-      strcpy(to, str);
+    void ready(String str) {
+      strcpy(to, str.c_str());
     }
     AskStrMenu *toBuffer(char *ptr) {
       to = ptr;
@@ -108,6 +105,7 @@ class AskStrMenu: public AskStringMenu {
     }
   private:
     char *to;
+	char size;
 };
 
 
@@ -174,34 +172,52 @@ class MainMenu: public MenuTemplate {
       Serial.println(" 1.  Scan");
       Serial.println(" 2.  Network config");
       Serial.println(" 4.  Restart");
+      if(customMenuCb!=NULL) {
+        Serial.println(" 5.  Custom menu");
+      }
     }
     void menuSelect(int c) {
       switch (c) {
         case '1': subMenu(new WifiScanMenu(this)); return;
         case '2': subMenu(new NetworkMenu(this)); return;
         case '4': ESP.restart(); return;//subMenu(new WifiConnectMenu(this)); return;
+        case '5': {if(customMenuCb!=NULL) subMenu(customMenuCb(this)); return;}
       }
     }
+
+    void setCustomMenuCallback(MenuTemplate *(*cb)(MenuTemplate *)) {
+        customMenuCb = cb;
+    }
+ private:
+    MenuTemplate *(*customMenuCb)(MenuTemplate *);
 };
 
 MainMenu menu;
 
-int eppAddr;
-void updateEPPROM() {
-  bool commmitNeeded = false;
-  EEPROM.put(eppAddr, networkSetup);
-  EEPROM.commit(); //note here the commit!
+void WifiSetupMenu::run() {
+	menu.run();
 }
 
-void initWifiSetupMenu(int eppRomAddress) {
+WifiSetupMenu::WifiSetupMenu(int eppRomAddress) {
   eppAddr = eppRomAddress;
   //struct networkSetup networkSetup;
   char *ptr = (char*)&networkSetup;
   EEPROM.begin(512);
   EEPROM.get(eppAddr, networkSetup);
   WiFi.begin(networkSetup.ssid, networkSetup.pass);
+
 }
 
-void runWifiSetupMenu() {
-  menu.run();
+void WifiSetupMenu::setCustomMenuCallback(MenuTemplate *(*cb)(MenuTemplate *)) {
+    menu.setCustomMenuCallback(cb);
 }
+int WifiSetupMenu::usedEeprom() {
+    return sizeof(networkSetup);
+}
+void updateEPPROM() {
+  EEPROM.put(eppAddr, networkSetup);
+  EEPROM.commit(); //note here the commit!
+}
+
+
+

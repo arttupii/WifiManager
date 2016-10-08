@@ -82,7 +82,7 @@ void MenuTemplate::subMenu(MenuTemplate *subMenuPtr) {
 
 AskStringMenu::AskStringMenu(MenuTemplate *parent): MenuTemplate(parent) {
   i = 0;
-
+  buffer="";
 }
 void AskStringMenu::printMenu() {
   Serial.printf("%s\n", text);
@@ -95,26 +95,20 @@ AskStringMenu * AskStringMenu::menuText(const char*str) {
 
 
 void AskStringMenu::run() {
+
   int c = Serial.read();
   if (c != -1) {
     if (c == 8) {
-      i--;
-      if (i <= 0) {
-        i = 0;
-        return;
-      }
+	  if(buffer.length()>0)
+      	buffer.remove(buffer.length()-1);
     } if (c == '\n' || c == '\r') {
       if (abs(millis() - filterTimer) < 1000) return;
-      buffer[i] = 0;
+
       ready(buffer);
       returnToParentMenu();
     } else {
-      buffer[i] = c;
-      i++;
-      if (i >= sizeof(buffer) - 1) {
-        i -= 1;
-        return;
-      }
+      buffer+=(char)c;
+
     }
     Serial.print((char)c);
   }
