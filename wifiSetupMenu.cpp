@@ -96,7 +96,7 @@ class AskStrMenu: public AskStringMenu {
       this->to = to;
 	  this->size = bufferSize;
     }
-    void ready(String str) {
+    void ready(String &str) {
       strcpy(to, str.c_str());
     }
     AskStrMenu *toBuffer(char *ptr) {
